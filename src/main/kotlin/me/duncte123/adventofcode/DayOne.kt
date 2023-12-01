@@ -1,17 +1,18 @@
-class DayOne {
+import me.duncte123.adventofcode.partial.AbstractSolution
+
+class DayOne : AbstractSolution() {
     val stripRegex = "[^0-9]".toRegex()
 
-    init {
-        val allBytes = javaClass.getResourceAsStream("dayOneInput.txt").readAllBytes()
-        val inputString = String(allBytes).trim()
-//        val inputString = "two1nine\n" +
-//                "eightwothree\n" +
-//                "abcone2threexyz\n" +
-//                "xtwone3four\n" +
-//                "4nineeightseven2\n" +
-//                "zoneight234\n" +
-//                "7pqrstsixteen"
-        val inputLines = inputString.split("\n").filter { it.isNotBlank() }
+    override fun getTestInput() = "two1nine\n" +
+            "eightwothree\n" +
+            "abcone2threexyz\n" +
+            "xtwone3four\n" +
+            "4nineeightseven2\n" +
+            "zoneight234\n" +
+            "7pqrstsixteen"
+
+    override fun run(input: String): String {
+        val inputLines = input.split("\n").filter { it.isNotBlank() }
         val theNumbers = inputLines
             .map { fixupCollissions(it) }
             .map { getFirstAndLastNumber(it) }
@@ -20,11 +21,10 @@ class DayOne {
 
         val actualNumbers = theNumbers.map { it.toInt() }
 
-        val summed = actualNumbers.sum()
-
-        println(summed)
+        return actualNumbers.sum().toString()
     }
 
+    // TODO: another way is to replace "one" with "o1e", "eight" with "e8t" etc...
     fun fixupCollissions(line: String) = line
         .replace("oneight", "oneeight")
         .replace("threeight", "threeeight")

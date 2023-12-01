@@ -1,7 +1,22 @@
-fun main(args: Array<String>) {
-    println("Hello World!")
+import me.duncte123.adventofcode.partial.AbstractSolution
+import java.util.*
 
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+val days = listOf(
+    DayOne::class
+)
+
+fun getDayIndex(): Int {
+    return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) - 1
+}
+
+fun main(args: Array<String>) {
+    val useTestInput = args.isNotEmpty() && "--use-test-input" == args[0]
+    val day = getDayIndex()
+    val dayClazz = days[day]
+    val instance: AbstractSolution = dayClazz.constructors.first().call()
+
+    val selectedInput = if (useTestInput) instance.getTestInput() else instance.getInput()
+    val output = instance.run(selectedInput)
+
+    println("Day $day: $output")
 }
