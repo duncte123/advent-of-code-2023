@@ -17,17 +17,19 @@ class DayTwo : AbstractSolution() {
         val lines = input.trim().split("\n")
         val games = lines.map { makeGame(it) }
 
-        println(games)
+//        println(games)
 
         val possibleGames = games.filter {
             it.isGamePossibleWith(totalRedCubes, totalGreenCubes, totalBlueCubes)
         }
 
-        println(possibleGames)
+//        println(possibleGames)
 
         val gameIdsSummed = possibleGames.sumOf { it.id }
 
-        return "$gameIdsSummed"
+        val powerGames = games.sumOf { it.getPowerOfGame() }
+
+        return "$gameIdsSummed -> $powerGames"
     }
 
     private fun makeGame(input: String): GameData {
@@ -50,12 +52,16 @@ class DayTwo : AbstractSolution() {
 
 data class GameData(val id: Int, val cubeData: List<CubeData>) {
     fun isGamePossibleWith(red: Int, green: Int, blue: Int): Boolean {
-        val (maxRed, maxGreen, maxBlue) = getTotalCubeCountsInGame()
+        val (maxRed, maxGreen, maxBlue) = getMaxCubeCountInGame()
 
         return maxRed <= red && maxGreen <= green && maxBlue <= blue
     }
 
-    private fun getTotalCubeCountsInGame(): CubeData {
+    fun getPowerOfGame(): Int {
+        return getMaxCubeCountInGame().getPower()
+    }
+
+    private fun getMaxCubeCountInGame(): CubeData {
         val maxRed = cubeData.maxOf { it.red }
         val maxGreen = cubeData.maxOf { it.green }
         val maxBlue = cubeData.maxOf { it.blue }
@@ -64,6 +70,10 @@ data class GameData(val id: Int, val cubeData: List<CubeData>) {
     }
 }
 data class CubeData(val red: Int, val green: Int, val blue: Int) {
+    fun getPower(): Int {
+        return red * green * blue
+    }
+
     companion object {
         fun fromHand(input: String): CubeData {
             var red = 0
