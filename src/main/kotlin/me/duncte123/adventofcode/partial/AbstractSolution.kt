@@ -2,11 +2,11 @@ package me.duncte123.adventofcode.partial
 
 abstract class AbstractSolution {
     fun getInput(): String {
-        val clsName = javaClass.name
+        val clsName = javaClass.simpleName
         val camelCase = clsName[0].lowercase() + clsName.subSequence(1, clsName.length)
 
         return String(
-            javaClass.getResourceAsStream("${camelCase}Input.txt")?.readAllBytes() ?: byteArrayOf()
+            javaClass.getResourceAsStream("/${camelCase}Input.txt")?.readAllBytes() ?: byteArrayOf()
         ).trim()
     }
 
