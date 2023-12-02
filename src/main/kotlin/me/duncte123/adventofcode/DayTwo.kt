@@ -20,7 +20,7 @@ class DayTwo : AbstractSolution() {
 //        println(games)
 
         val possibleGames = games.filter {
-            it.isGamePossibleWith(totalRedCubes, totalGreenCubes, totalBlueCubes)
+            it.isPossibleWith(totalRedCubes, totalGreenCubes, totalBlueCubes)
         }
 
 //        println(possibleGames)
@@ -51,7 +51,7 @@ class DayTwo : AbstractSolution() {
 }
 
 data class GameData(val id: Int, val cubeData: List<CubeData>) {
-    fun isGamePossibleWith(red: Int, green: Int, blue: Int): Boolean {
+    fun isPossibleWith(red: Int, green: Int, blue: Int): Boolean {
         val (maxRed, maxGreen, maxBlue) = getMaxCubeCountInGame()
 
         return maxRed <= red && maxGreen <= green && maxBlue <= blue
