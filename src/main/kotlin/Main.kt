@@ -1,3 +1,4 @@
+import me.duncte123.adventofcode.DayThree
 import me.duncte123.adventofcode.DayTwo
 import me.duncte123.adventofcode.partial.AbstractSolution
 import java.util.*
@@ -5,15 +6,17 @@ import java.util.*
 val days = listOf(
     DayOne::class,
     DayTwo::class,
+    DayThree::class,
 )
 
 fun getDayIndex(): Int {
-    return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) - 1
+//    return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) - 1
+    return 2
 }
 
 fun main(args: Array<String>) {
-//    val useTestInput = args.isNotEmpty() && "--use-test-input" == args[0]
-    val useTestInput = false
+    val useTestInput = args.isNotEmpty() && "--use-test-input" == args[0]
+//    val useTestInput = false
     val day = getDayIndex()
     val dayClazz = days[day]
     val instance: AbstractSolution = dayClazz.constructors.first().call()
