@@ -61,9 +61,7 @@ class DayThree : AbstractSolution() {
             return 0 to false
         }
 
-        // Don't fucking ask me why, but the result is higher when we subtract one.
-        // Does that make sense? NOPE
-        val firstNumIndex = row.indexOf(strNum) - 1
+        val firstNumIndex = row.indexOf(strNum)
 
         if (firstNumIndex == -1) {
             println("Could not find $strNum in $row")
