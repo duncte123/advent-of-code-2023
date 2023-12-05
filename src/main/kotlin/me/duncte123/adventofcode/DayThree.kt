@@ -8,9 +8,9 @@ class DayThree : AbstractSolution() {
             "..35..633.\n" +
             "......#...\n" +
             "617*......\n" +
-            ".....+.58.\n" +
+            ".......58.\n" +
             "..592.....\n" +
-            "......755.\n" +
+            "...*..755.\n" +
             "...\$.*....\n" +
             ".664.598..\n" +
             "..........\n" +
@@ -69,6 +69,8 @@ class DayThree : AbstractSolution() {
             return 0 to false
         }
 
+        println("${index + 1}#$firstNumIndex> $strNum")
+
         var isPart = false
 
         // normalize the index to be 0 based
@@ -91,8 +93,7 @@ class DayThree : AbstractSolution() {
         }
 
         if (isPart) {
-            println("${index + 1}> $strNum")
-
+            println("(found part) ${index + 1}#$firstNumIndex> $strNum")
             return strNum.toInt() to true
         }
 
