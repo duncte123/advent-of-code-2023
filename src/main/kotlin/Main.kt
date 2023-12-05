@@ -1,3 +1,4 @@
+import me.duncte123.adventofcode.DayFour
 import me.duncte123.adventofcode.DayThree
 import me.duncte123.adventofcode.DayTwo
 import me.duncte123.adventofcode.partial.AbstractSolution
@@ -7,11 +8,12 @@ val days = listOf(
     DayOne::class,
     DayTwo::class,
     DayThree::class,
+    DayFour::class,
 )
 
 fun getDayIndex(): Int {
 //    return Calendar.getInstance().get(Calendar.DAY_OF_MONTH) - 1
-    return 2
+    return 3
 }
 
 fun main(args: Array<String>) {
