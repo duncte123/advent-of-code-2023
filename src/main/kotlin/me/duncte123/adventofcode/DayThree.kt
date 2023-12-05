@@ -8,15 +8,15 @@ class DayThree : AbstractSolution() {
             "..35..633.\n" +
             "......#...\n" +
             "617*......\n" +
-            ".......58.\n" +
+            "..=....58.\n" +
             "..592.....\n" +
-            "...*..755.\n" +
-            "...\$.*....\n" +
-            ".664.598..\n" +
-            "..........\n" +
-            "...2......\n" + // found a bug, but what else could it fucking be
-            "....*...*.\n" +
-            ".........1"
+            "......755.\n" +
+           "...\$.*....\n" +
+            ".664.598..\n"
+//            "..........\n" +
+//            "...2......\n" + // found a bug, but what else could it fucking be
+//            "....*...*.\n" +
+//            ".........1"
 //    override fun getTestInput() = "...12\n" +
 //        "12*.."
 
@@ -51,6 +51,7 @@ class DayThree : AbstractSolution() {
             }
         }
 
+        // Correct possible answer is 517021, but not testing that until it gives me the result.
         val badNums = listOf(589770, 524618, 516134, 514096, 509814, 471817, 15758)
         val yellMsg = if (total in badNums) " (you've had this answer before, it was wrong)" else ""
 
@@ -69,8 +70,6 @@ class DayThree : AbstractSolution() {
             return 0 to false
         }
 
-        println("${index + 1}#$firstNumIndex> $strNum")
-
         var isPart = false
 
         // normalize the index to be 0 based
@@ -82,6 +81,8 @@ class DayThree : AbstractSolution() {
             // Right above
             isPart = checkSurrounding(rowAbove, firstNumIndex, lastNumIndex)
         }
+
+        println("${index + 1}#$firstNumIndex> $strNum")
 
         isPart = isPart || canBePart(row[firstNumIndex - 1]) || canBePart(row[lastNumIndex + 1])
 //        isPart = isPart || checkSurrounding(row, firstNumIndex, lastNumIndex)
@@ -101,6 +102,19 @@ class DayThree : AbstractSolution() {
     }
 
     private fun checkSurrounding(row: String, firstIndex: Int, lastIndex: Int): Boolean {
+        println("${
+            row[firstIndex + 1]
+        }${
+            row[firstIndex]
+        }${
+            row[firstIndex - 1]
+        }${
+            row[lastIndex + 1]
+        }${
+            row[lastIndex]
+        }${
+            row[lastIndex - 1]
+        }")
         return canBePart(row[firstIndex + 1]) ||
                 canBePart(row[firstIndex]) ||
                 canBePart(row[firstIndex - 1]) ||
