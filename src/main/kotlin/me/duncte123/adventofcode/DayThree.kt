@@ -46,8 +46,6 @@ class DayThree : AbstractSolution() {
 
                     if (success) {
                         total += toAdd
-
-                        strNum = ""
                     }
                 }
             }
@@ -71,7 +69,7 @@ class DayThree : AbstractSolution() {
         var isPart = false
 
         // normalize the index to be 0 based
-        val lastNumIndex = firstNumIndex + strNum.length
+        val lastNumIndex = firstNumIndex + strNum.length - 1
 
         if (index > 0) {
             val rowAbove = rows[index - 1]
