@@ -27,33 +27,33 @@ class DayThree : AbstractSolution() {
         rows.forEachIndexed { index, row ->
             var strNum = ""
 
-             row.forEachIndexed rowLoop@{ lineIndex, char ->
-                 if (char.isDigit()) {
-                     strNum += char
-                 } else {
-                     val (toAdd, success) = checkRow(index, rows, row, strNum)
+            row.forEachIndexed rowLoop@{ lineIndex, char ->
+                if (char.isDigit()) {
+                    strNum += char
+                } else {
+                    val (toAdd, success) = checkRow(index, rows, row, strNum)
 
-                     if (success) {
-                         total += toAdd
-                     }
+                    if (success) {
+                        total += toAdd
+                    }
 
-                     strNum = ""
-                 }
+                    strNum = ""
+                }
 
-                 // If we have a num on the end of the line (eg 132)
-                 if (lineIndex == row.length - 1) {
-                     val (toAdd, success) = checkRow(index, rows, row, strNum)
+                // If we have a num on the end of the line (eg 132)
+                if (lineIndex == row.length - 1) {
+                    val (toAdd, success) = checkRow(index, rows, row, strNum)
 
-                     if (success) {
-                         total += toAdd
+                    if (success) {
+                        total += toAdd
 
-                         strNum = ""
-                     }
-                 }
+                        strNum = ""
+                    }
+                }
             }
         }
 
-        return "$total (bad nums 516134, 514096, 509814, 524618, 15758)"
+        return "$total (bad nums 516134, 514096, 509814, 524618, 471817, 15758)"
     }
 
     private fun checkRow(index: Int, rows: List<String>, row: String, strNum: String): Pair<Int, Boolean> {
@@ -68,7 +68,7 @@ class DayThree : AbstractSolution() {
             return 0 to false
         }
 
-        var canBeAdded = false
+        var isPart = false
 
         // normalize the index to be 0 based
         val lastNumIndex = firstNumIndex + strNum.length
@@ -77,34 +77,38 @@ class DayThree : AbstractSolution() {
             val rowAbove = rows[index - 1]
 
             // Right above
-            canBeAdded = rowAbove[firstNumIndex + 1] != '.' ||
-                    rowAbove[firstNumIndex] != '.' ||
-                    rowAbove[firstNumIndex - 1] != '.' ||
-                    rowAbove[lastNumIndex + 1] != '.' ||
-                    rowAbove[lastNumIndex] != '.' ||
-                    rowAbove[lastNumIndex - 1] != '.'
+            isPart = canBePart(rowAbove[firstNumIndex + 1]) ||
+                    canBePart(rowAbove[firstNumIndex]) ||
+                    canBePart(rowAbove[firstNumIndex - 1]) ||
+                    canBePart(rowAbove[lastNumIndex + 1]) ||
+                    canBePart(rowAbove[lastNumIndex]) ||
+                    canBePart(rowAbove[lastNumIndex - 1])
         }
 
-        canBeAdded = canBeAdded || row[firstNumIndex - 1] != '.' || row[lastNumIndex + 1] != '.'
+        isPart = isPart || canBePart(row[firstNumIndex - 1]) || canBePart(row[lastNumIndex + 1])
 
         if (index < rows.size - 1) {
             val rowBelow = rows[index + 1]
 
-            canBeAdded = canBeAdded ||
-                    rowBelow[firstNumIndex + 1] != '.' ||
-                    rowBelow[firstNumIndex] != '.' ||
-                    rowBelow[firstNumIndex - 1] != '.' ||
-                    rowBelow[lastNumIndex + 1] != '.' ||
-                    rowBelow[lastNumIndex] != '.' ||
-                    rowBelow[lastNumIndex - 1] != '.'
+            isPart = isPart ||
+                    canBePart(rowBelow[firstNumIndex + 1]) ||
+                    canBePart(rowBelow[firstNumIndex]) ||
+                    canBePart(rowBelow[firstNumIndex - 1]) ||
+                    canBePart(rowBelow[lastNumIndex + 1]) ||
+                    canBePart(rowBelow[lastNumIndex]) ||
+                    canBePart(rowBelow[lastNumIndex - 1])
         }
 
-        if (canBeAdded) {
+        if (isPart) {
             println("${index + 1}> $strNum")
 
             return strNum.toInt() to true
         }
 
         return 0 to true
+    }
+
+    private fun canBePart(item: Char): Boolean {
+        return item != '.'
     }
 }
