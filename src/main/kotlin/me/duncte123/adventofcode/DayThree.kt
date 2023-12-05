@@ -21,7 +21,9 @@ class DayThree : AbstractSolution() {
 //        "12*.."
 
     override fun run(input: String): String {
-        val rows = input.trim().split("\n").map { "..$it.." }
+        val rows = input.trim().split("\n")
+            // Padding out the strings on both sides, don't feel like doing bounds checks
+            .map { "..$it.." }
         var total = 0
 
         rows.forEachIndexed { index, row ->
