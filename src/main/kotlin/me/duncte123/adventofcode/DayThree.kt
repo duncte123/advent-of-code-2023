@@ -77,12 +77,7 @@ class DayThree : AbstractSolution() {
             val rowAbove = rows[index - 1]
 
             // Right above
-            isPart = canBePart(rowAbove[firstNumIndex + 1]) ||
-                    canBePart(rowAbove[firstNumIndex]) ||
-                    canBePart(rowAbove[firstNumIndex - 1]) ||
-                    canBePart(rowAbove[lastNumIndex + 1]) ||
-                    canBePart(rowAbove[lastNumIndex]) ||
-                    canBePart(rowAbove[lastNumIndex - 1])
+            isPart = checkSurrounding(rowAbove, firstNumIndex, lastNumIndex)
         }
 
         isPart = isPart || canBePart(row[firstNumIndex - 1]) || canBePart(row[lastNumIndex + 1])
@@ -90,13 +85,7 @@ class DayThree : AbstractSolution() {
         if (index < rows.size - 1) {
             val rowBelow = rows[index + 1]
 
-            isPart = isPart ||
-                    canBePart(rowBelow[firstNumIndex + 1]) ||
-                    canBePart(rowBelow[firstNumIndex]) ||
-                    canBePart(rowBelow[firstNumIndex - 1]) ||
-                    canBePart(rowBelow[lastNumIndex + 1]) ||
-                    canBePart(rowBelow[lastNumIndex]) ||
-                    canBePart(rowBelow[lastNumIndex - 1])
+            isPart = isPart || checkSurrounding(rowBelow, firstNumIndex, lastNumIndex)
         }
 
         if (isPart) {
@@ -106,6 +95,15 @@ class DayThree : AbstractSolution() {
         }
 
         return 0 to true
+    }
+
+    private fun checkSurrounding(row: String, firstIndex: Int, lastIndex: Int): Boolean {
+        return canBePart(row[firstIndex + 1]) ||
+                canBePart(row[firstIndex]) ||
+                canBePart(row[firstIndex - 1]) ||
+                canBePart(row[lastIndex + 1]) ||
+                canBePart(row[lastIndex]) ||
+                canBePart(row[lastIndex - 1])
     }
 
     private fun canBePart(item: Char): Boolean {
