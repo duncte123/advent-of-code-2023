@@ -28,12 +28,17 @@ class DayThree : AbstractSolution() {
 
         rows.forEachIndexed { index, row ->
             var strNum = ""
+            var startIndex = 0
 
             row.forEachIndexed rowLoop@{ lineIndex, char ->
                 if (char.isDigit()) {
+                    if (strNum.isBlank()) {
+                        startIndex = lineIndex
+                    }
+
                     strNum += char
                 } else {
-                    val (toAdd, success) = checkRow(index, rows, row, strNum)
+                    val (toAdd, success) = checkRow(index, rows, row, strNum, startIndex)
 
                     if (success) {
                         total += toAdd
@@ -44,7 +49,7 @@ class DayThree : AbstractSolution() {
 
                 // If we have a num on the end of the line (eg 132)
                 if (lineIndex == row.length - 1) {
-                    val (toAdd, success) = checkRow(index, rows, row, strNum)
+                    val (toAdd, success) = checkRow(index, rows, row, strNum, startIndex)
 
                     if (success) {
                         total += toAdd
@@ -60,12 +65,12 @@ class DayThree : AbstractSolution() {
         return "$total$yellMsg"
     }
 
-    private fun checkRow(index: Int, rows: List<String>, row: String, strNum: String): Pair<Int, Boolean> {
+    private fun checkRow(index: Int, rows: List<String>, row: String, strNum: String, startIndex: Int = 0): Pair<Int, Boolean> {
         if (strNum.isBlank()) {
             return 0 to false
         }
 
-        val firstNumIndex = row.indexOf(strNum)
+        val firstNumIndex = row.indexOf(strNum, startIndex)
 
         if (firstNumIndex == -1) {
             println("Could not find $strNum in $row")
@@ -105,24 +110,24 @@ class DayThree : AbstractSolution() {
 
     private fun checkSurrounding(row: String, firstIndex: Int, lastIndex: Int): Boolean {
         println("${
-            row[firstIndex + 1]
+            row[firstIndex - 1]
         }${
             row[firstIndex]
         }${
-            row[firstIndex - 1]
+            row[firstIndex + 1]
         }${
-            row[lastIndex + 1]
+            row[lastIndex - 1]
         }${
             row[lastIndex]
         }${
-            row[lastIndex - 1]
+            row[lastIndex + 1]
         }")
-        return canBePart(row[firstIndex + 1]) ||
+        return canBePart(row[firstIndex - 1]) ||
                 canBePart(row[firstIndex]) ||
-                canBePart(row[firstIndex - 1]) ||
-                canBePart(row[lastIndex + 1]) ||
+                canBePart(row[firstIndex + 1]) ||
+                canBePart(row[lastIndex - 1]) ||
                 canBePart(row[lastIndex]) ||
-                canBePart(row[lastIndex - 1])
+                canBePart(row[lastIndex + 1])
     }
 
     private fun canBePart(item: Char): Boolean {
