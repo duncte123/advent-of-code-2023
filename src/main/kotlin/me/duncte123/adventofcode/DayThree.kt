@@ -2,6 +2,9 @@ package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
 
+/**
+ * TODO: Also use bounding boxes for number checks (lol)
+ */
 class DayThree : AbstractSolution() {
     private val numberLocations = mutableMapOf<NumberLoc, Int>()
     override fun getTestInput() =
@@ -59,7 +62,7 @@ class DayThree : AbstractSolution() {
             }
         }
 
-        val gearRatio = calculateGearRatio(gearCoords, rows)
+        val gearRatio = calculateGearRatio(gearCoords)
 
         // Correct possible answer is 517021, but not testing that until it gives me the result.
         val badNums = listOf(589770, 524618, 516134, 514096, 509814, 471817, 15758)
@@ -95,12 +98,11 @@ class DayThree : AbstractSolution() {
         numberLocations[NumberLoc(
             start = Coord(firstNumIndex, yCoord),
             end = Coord(lastNumIndex, yCoord)
-        )]
+        )] = strNum.toInt()
 
         println("${yCoord + 1}#$firstNumIndex> $strNum")
 
         isPart = isPart || canBePart(row[firstNumIndex - 1]) || canBePart(row[lastNumIndex + 1])
-//        isPart = isPart || checkSurrounding(row, firstNumIndex, lastNumIndex)
 
         if (yCoord < rows.size - 1) {
             val rowBelow = rows[yCoord + 1]
@@ -138,47 +140,37 @@ class DayThree : AbstractSolution() {
                 canBePart(row[lastIndex + 1])
     }
 
-    private fun calculateGearRatio(gearCoords: Map<Coord, Char>, rows: List<String>): Int {
-        val result = 0
+    private fun calculateGearRatio(gearCoords: Map<Coord, Char>): Int {
+        var result = 0
 
-        gearCoords.forEach { (coord, ) ->
-            val isConsideredForRatio = checkSurroundingForDigit(coord, rows)
+        println(numberLocations)
 
-            if (isConsideredForRatio) {
-                val numTopLeft = numberLocations[NumberLoc.fromNormalCoord(
-                    coord = coord,
-                    addStartX = 1,
-                    addStartY = 1,
-                )]
+        gearCoords.forEach { (coord, _) ->
+            val bbox = getBoundingBox(coord)
+            val numbersInBbox = numberLocations.filter { bbox.isInBounds(it.key) }
 
-                println(numTopLeft)
+            if (numbersInBbox.size >= 2) {
+                result += numbersInBbox.map { it.value }.reduce { a, b -> a * b }
             }
         }
 
         return result
     }
 
-    // TODO: check left and right of gear
-    private fun checkSurroundingForDigit(gearLoc: Coord, rows: List<String>): Boolean {
-        val topLeft = rows[gearLoc.y - 1][gearLoc.x - 1]
-        val topCenter = rows[gearLoc.y - 1][gearLoc.x]
-        val topRight = rows[gearLoc.y - 1][gearLoc.x + 1]
+    private fun getBoundingBox(coord: Coord): BBox {
+        val topLeft = Coord(
+            coord.x - 1,
+            coord.y - 1
+        )
+        val bottomRight = Coord(
+            coord.x + 1,
+            coord.y + 1
+        )
 
-        val bottomLeft = rows[gearLoc.y + 1][gearLoc.x - 1]
-        val bottomCenter = rows[gearLoc.y + 1][gearLoc.x]
-        val bottomRight = rows[gearLoc.y + 1][gearLoc.x + 1]
-
-        return (
-                    topLeft.isDigit() ||
-                    topCenter.isDigit() ||
-                    topRight.isDigit()
-                )
-                &&
-                (
-                    bottomLeft.isDigit() ||
-                    bottomCenter.isDigit() ||
-                    bottomRight.isDigit()
-                )
+        return BBox(
+            topLeft,
+            bottomRight
+        )
     }
 
     private fun canBePart(item: Char): Boolean {
@@ -187,19 +179,15 @@ class DayThree : AbstractSolution() {
 }
 
 data class Coord(val x: Int, val y: Int)
-data class NumberLoc(val start: Coord, val end: Coord) {
-    companion object {
-        fun fromNormalCoord(coord: Coord, addStartX: Int = 0, addStartY: Int = 0, addEndX: Int = 0, addEndY: Int = 0): NumberLoc {
-            return NumberLoc(
-                Coord(
-                    coord.x + addStartX,
-                    coord.y + addStartY,
-                ),
-                Coord(
-                    coord.x + addEndX,
-                    coord.y + addEndY,
-                )
-            )
-        }
+data class BBox(
+    val topLeft: Coord,
+    val bottomRight: Coord
+) {
+    private fun isInBounds(coord: Coord): Boolean {
+        return topLeft.x <= coord.x && coord.x <= bottomRight.x && topLeft.y <= coord.y && coord.y <= bottomRight.y
+    }
+    fun isInBounds(coords: NumberLoc): Boolean {
+        return isInBounds(coords.start) || isInBounds(coords.end)
     }
 }
+data class NumberLoc(val start: Coord, val end: Coord)
