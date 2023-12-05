@@ -51,7 +51,10 @@ class DayThree : AbstractSolution() {
             }
         }
 
-        return "$total (bad nums 516134, 514096, 509814, 524618, 471817, 15758)"
+        val badNums = listOf(589770, 524618, 516134, 514096, 509814, 471817, 15758)
+        val yellMsg = if (total in badNums) " (you've had this answer before, it was wrong)" else ""
+
+        return "$total$yellMsg"
     }
 
     private fun checkRow(index: Int, rows: List<String>, row: String, strNum: String): Pair<Int, Boolean> {
@@ -79,6 +82,7 @@ class DayThree : AbstractSolution() {
         }
 
         isPart = isPart || canBePart(row[firstNumIndex - 1]) || canBePart(row[lastNumIndex + 1])
+//        isPart = isPart || checkSurrounding(row, firstNumIndex, lastNumIndex)
 
         if (index < rows.size - 1) {
             val rowBelow = rows[index + 1]
