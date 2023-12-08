@@ -1,6 +1,7 @@
 package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Future
 
 class DayFive : AbstractSolution() {
@@ -65,12 +66,15 @@ class DayFive : AbstractSolution() {
                 source .. (source + length)
             }
 
+        val latch = CountDownLatch(seedPairs.size)
+
         println(seedPairs)
 
         val results = mutableListOf<Long>()
 
-        val threads = seedPairs.map { stage1 ->
+        seedPairs.map { stage1 ->
             runOnVirtual {
+                Thread.currentThread().name = "RangeThread[$stage1]"
                 val stages = listOf(
                     /*seedToSoil,*/ soilToFertilizer, fertilizerToWater,
                     waterToLight, lightToTemperature, temperatureToHumidity,
@@ -81,24 +85,31 @@ class DayFive : AbstractSolution() {
                 val seedToSoilRange = makeMapping(seedToSoil)
 
                 var stageData = stage1.map {
-                    getMappedInRange(it, seedToSoilRange)
+                    val res = getMappedInRange(it, seedToSoilRange)
+                    println("[${Thread.currentThread().name}] Mapped $it to $res")
+                    res
                 }.toMutableList()
 
-                println(stageData)
+                println("[${Thread.currentThread().name}] $stageData")
 
                 stages.forEach { stage ->
                     val stageMapping = makeMapping(stage)
 
-                    stageData = stageData.map { getMappedInRange(it, stageMapping) }.toMutableList()
+                    stageData = stageData.map {
+                        val res = getMappedInRange(it, stageMapping)
+                        println("[${Thread.currentThread().name}] Mapped $it to $res")
+                        res
+                    }.toMutableList()
 
-                    println(stageData)
+                    println("[${Thread.currentThread().name}] $stageData")
                 }
 
                 results.add(stageData.minOf { it })
+                latch.countDown()
             }
         }
 
-        threads.forEach { it.join() }
+        latch.await()
 
         return "${results.minOf { it }}"
     }
