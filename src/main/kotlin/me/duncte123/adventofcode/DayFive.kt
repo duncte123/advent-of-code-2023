@@ -40,7 +40,7 @@ class DayFive : AbstractSolution() {
         "56 93 4"
 
     override fun run(input: String): String {
-        val (
+        /*val (
             seedsRaw,
             seedToSoil,
             soilToFertilizer,
@@ -49,12 +49,15 @@ class DayFive : AbstractSolution() {
             lightToTemperature,
             temperatureToHumidity,
             humidityToLocation
-        ) = input.split("\n\n").map { part ->
+        )*/
+        val stages = input.split("\n\n").map { part ->
             part.split(":".toRegex(), 2)[1]
                 .split("\n")
                 .map { it.trim() }
                 .filter { it.isNotBlank() }
         }
+
+        val seedsRaw = stages.removeFirst()
 
         val seedPairs = seedsRaw.first()
             .split(" ")
@@ -70,37 +73,27 @@ class DayFive : AbstractSolution() {
         println(seedPairs)
 
         val results = mutableListOf<Long>()
+//        val seedToSoil = stages.removeFirst()
 
         seedPairs.map { stage1 ->
-            runOnVirtual("RangeThread[$stage1]") {
-                val stages = listOf(
-                    /*seedToSoil,*/ soilToFertilizer, fertilizerToWater,
-                    waterToLight, lightToTemperature, temperatureToHumidity,
-                    humidityToLocation
-                )
-
+            runOnVThread("RangeThread[$stage1]") {
                 // Initial conversion so that we have a list
-                val seedToSoilRange = makeMappingRanges(seedToSoil)
+//                val seedToSoilRange = makeMappingRanges(seedToSoil)
 
-                var stageData = stage1.map {
-                    val res = getMappedInRange(it, seedToSoilRange)
-                    println("[${Thread.currentThread().name}] Mapped $it to $res")
+                val stageData = stage1.map {
+                    var res = it
+                    stages.map { stage ->
+                        runOnVThread("StageThread") {
+                            val stageMapping = makeMappingRanges(stage)
+
+                            res = getMappedInRange(res, stageMapping)
+                            // println("[${Thread.currentThread().name}] Mapped $it to $res")
+                        }
+                    }.forEach { t -> t.join() }
                     res
-                }.toMutableList()
-
-                println("[${Thread.currentThread().name}] $stageData")
-
-                stages.forEach { stage ->
-                    val stageMapping = makeMappingRanges(stage)
-
-                    stageData = stageData.map {
-                        val res = getMappedInRange(it, stageMapping)
-                        println("[${Thread.currentThread().name}] Mapped $it to $res")
-                        res
-                    }.toMutableList()
-
-                    println("[${Thread.currentThread().name}] $stageData")
                 }
+
+                println(stageData)
 
                 results.add(stageData.minOf { it })
                 latch.countDown()
@@ -126,7 +119,7 @@ class DayFive : AbstractSolution() {
         return ranges
     }
 
-    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>, result: (Long) -> Unit) = runOnVirtual("MappedThread[$input]") {
+    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>, result: (Long) -> Unit) = runOnVThread("MappedThread[$input]") {
         val found = getMappedInRange(input, ranges)
 
         result(found)
@@ -155,7 +148,7 @@ class DayFive : AbstractSolution() {
         return input
     }
 
-    private fun runOnVirtual(name: String, task: () -> Unit) = Thread.ofVirtual().name(name).start(task)
+    private fun runOnVThread(name: String, task: () -> Unit) = Thread.ofVirtual().name(name).start(task)
 
     private operator fun <E> List<E>.component6(): E = this[5]
     private operator fun <E> List<E>.component7(): E = this[6]
