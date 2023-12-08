@@ -1,55 +1,10 @@
 package me.duncte123.adventofcode
 
-import me.duncte123.adventofcode.partial.AbstractSolution
 import java.util.concurrent.CountDownLatch
 
-class DayFive : AbstractSolution() {
-    override fun getTestInput() =
-        "seeds: 79 14 55 13\n" +
-        "\n" +
-        "seed-to-soil map:\n" +
-        "50 98 2\n" +
-        "52 50 48\n" +
-        "\n" +
-        "soil-to-fertilizer map:\n" +
-        "0 15 37\n" +
-        "37 52 2\n" +
-        "39 0 15\n" +
-        "\n" +
-        "fertilizer-to-water map:\n" +
-        "49 53 8\n" +
-        "0 11 42\n" +
-        "42 0 7\n" +
-        "57 7 4\n" +
-        "\n" +
-        "water-to-light map:\n" +
-        "88 18 7\n" +
-        "18 25 70\n" +
-        "\n" +
-        "light-to-temperature map:\n" +
-        "45 77 23\n" +
-        "81 45 19\n" +
-        "68 64 13\n" +
-        "\n" +
-        "temperature-to-humidity map:\n" +
-        "0 69 1\n" +
-        "1 0 69\n" +
-        "\n" +
-        "humidity-to-location map:\n" +
-        "60 56 37\n" +
-        "56 93 4"
-
-    override fun run(input: String): String {
-        /*val (
-            seedsRaw,
-            seedToSoil,
-            soilToFertilizer,
-            fertilizerToWater,
-            waterToLight,
-            lightToTemperature,
-            temperatureToHumidity,
-            humidityToLocation
-        )*/
+// I am calling this the "Bro, what the fuck?" benchmark.
+class DayFiveBenchmark {
+    fun run(input: String): String {
         val stages = input.split("\n\n").map { part ->
             part.split(":".toRegex(), 2)[1]
                 .split("\n")
@@ -69,29 +24,23 @@ class DayFive : AbstractSolution() {
             }
 
         val latch = CountDownLatch(seedPairs.size)
-
-        println(seedPairs)
-
         val results = mutableListOf<Long>()
-//        val seedToSoil = stages.removeFirst()
 
         seedPairs.map { stage1 ->
             runOnVThread("RangeThread[$stage1]") {
-                // Initial conversion so that we have a list
-//                val seedToSoilRange = makeMappingRanges(seedToSoil)
-
                 val stageData = stage1.map {
+                    println("[${Thread.currentThread().name}] Mapped $it in all stages")
                     var res = it
-                    stages.forEach { stage ->
-                        val stageMapping = makeMappingRanges(stage)
+                    stages.map { stage ->
+                        runOnVThread("StageThread[$it]") {
+                            val stageMapping = makeMappingRanges(stage)
 
-                        res = getMappedInRange(res, stageMapping)
-                        // println("[${Thread.currentThread().name}] Mapped $it to $res")
-                    }
+                            res = getMappedInRange(res, stageMapping)
+                            println("[${Thread.currentThread().name}] Mapped $it to $res")
+                        }
+                    }.forEach { t -> t.join() }
                     res
                 }
-
-                println(stageData)
 
                 results.add(stageData.minOf { it })
                 latch.countDown()
@@ -148,7 +97,22 @@ class DayFive : AbstractSolution() {
 
     private fun runOnVThread(name: String, task: () -> Unit) = Thread.ofVirtual().name(name).start(task)
 
-    private operator fun <E> List<E>.component6(): E = this[5]
-    private operator fun <E> List<E>.component7(): E = this[6]
-    private operator fun <E> List<E>.component8(): E = this[7]
+    fun getInput(): String {
+        return String(
+            javaClass.getResourceAsStream("/dayFiveInput.txt")?.readAllBytes() ?: byteArrayOf()
+        ).trim()
+    }
+}
+
+fun main() {
+    val startTime = System.currentTimeMillis()
+
+    val benchmark = DayFiveBenchmark()
+    val input = benchmark.getInput()
+
+    benchmark.run(input)
+
+    val endTime = System.currentTimeMillis()
+
+    println("Took ${endTime - startTime}ms")
 }
