@@ -1,6 +1,7 @@
 package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
+import java.util.concurrent.Future
 
 class DayFive : AbstractSolution() {
     override fun getTestInput() =
@@ -38,15 +39,6 @@ class DayFive : AbstractSolution() {
         "60 56 37\n" +
         "56 93 4"
 
-    // source -> destination
-    private val seedToSoilMap = hashMapOf<Long, Long>()
-    private val soilToFertilizerMap = hashMapOf<Long, Long>()
-    private val fertilizerToWaterMap = hashMapOf<Long, Long>()
-    private val waterToLightMap = hashMapOf<Long, Long>()
-    private val lightToTemperatureMap = hashMapOf<Long, Long>()
-    private val temperatureToHumidityMap = hashMapOf<Long, Long>()
-    private val humidityToLocationMap = hashMapOf<Long, Long>()
-
     override fun run(input: String): String {
         val (
             seedsRaw,
@@ -64,71 +56,99 @@ class DayFive : AbstractSolution() {
                 .filter { it.isNotBlank() }
         }
 
-        val tempMap = hashMapOf<Long, Long>()
-
-        makeMapping(seedToSoil, tempMap)
-
-        val stage2 = seedsRaw.first().split(" ")
+        val seedPairs = seedsRaw.first()
+            .split(" ")
             .map { it.toLong() }
-            .map { tempMap.getMappedSource(it) }
+            // Comment out the two lines below to switch to part one
+            .chunked(2)
+            .map { (source, length) ->
+                source .. (source + length)
+            }
 
-        makeMapping(soilToFertilizer, tempMap)
+        println(seedPairs)
 
-        val stage3 = stage2.map { tempMap.getMappedSource(it) }
+        val results = mutableListOf<Long>()
 
-        makeMapping(fertilizerToWater, tempMap)
+        val threads = seedPairs.map { stage1 ->
+            runOnVirtual {
+                val stages = listOf(
+                    /*seedToSoil,*/ soilToFertilizer, fertilizerToWater,
+                    waterToLight, lightToTemperature, temperatureToHumidity,
+                    humidityToLocation
+                )
 
-        val stage4 = stage3.map { tempMap.getMappedSource(it) }
+                // Initial conversion so that we have a list
+                val seedToSoilRange = makeMapping(seedToSoil)
 
-        makeMapping(waterToLight, tempMap)
+                var stageData = stage1.map {
+                    getMappedInRange(it, seedToSoilRange)
+                }.toMutableList()
 
-        val stage5 = stage4.map { tempMap.getMappedSource(it) }
+                println(stageData)
 
-        makeMapping(lightToTemperature, tempMap)
+                stages.forEach { stage ->
+                    val stageMapping = makeMapping(stage)
 
-        val stage6 = stage5.map { tempMap.getMappedSource(it) }
+                    stageData = stageData.map { getMappedInRange(it, stageMapping) }.toMutableList()
 
-        makeMapping(temperatureToHumidity, tempMap)
+                    println(stageData)
+                }
 
-        val stage7 = stage6.map { tempMap.getMappedSource(it) }
+                results.add(stageData.minOf { it })
+            }
+        }
 
-        makeMapping(humidityToLocation, tempMap)
+        threads.forEach { it.join() }
 
-        val stage8 = stage7.map { tempMap.getMappedSource(it) }
-
-
-        val resultingLocations = mutableListOf<Long>()
-        /*val seeds = seedsRaw.first().split(" ").map { it.toLong() }
-
-        seeds.forEach { seed ->
-            val soil = seedToSoilMap.getMappedSource(seed)
-            val fertilizer = soilToFertilizerMap.getMappedSource(soil)
-            val water = fertilizerToWaterMap.getMappedSource(fertilizer)
-            val light = waterToLightMap.getMappedSource(water)
-            val temp = lightToTemperatureMap.getMappedSource(light)
-            val humidity = temperatureToHumidityMap.getMappedSource(temp)
-            val location = humidityToLocationMap.getMappedSource(humidity)
-
-            resultingLocations.add(location)
-        }*/
-
-        return "${stage8.minOf { it }}"
+        return "${results.minOf { it }}"
     }
 
-    private fun makeMapping(input: List<String>, targetMap: MutableMap<Long, Long>) {
-        targetMap.clear()
+    private fun makeMapping(input: List<String>): List<Pair<LongRange, LongRange>> {
+        val ranges = mutableListOf<Pair<LongRange, LongRange>>()
+
         input.forEach {
             val (destStart, sourceStart, length) = it.split(" ").map { item -> item.toLong() }
 
-            for (i in 0 .. length) {
-                targetMap[sourceStart + i] = destStart + i
-            }
+            ranges.add(
+                (sourceStart .. (sourceStart + length)) to (destStart .. (destStart + length))
+            )
         }
+
+        return ranges
     }
+
+    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>, result: (Long) -> Unit) = runOnVirtual {
+        val found = getMappedInRange(input, ranges)
+
+        result(found)
+    }
+
+    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>): Long {
+        val foundRanges = ranges.filter { it.first.contains(input) }
+
+        if (foundRanges.isEmpty()) {
+            return input
+        }
+
+        foundRanges.forEach { (source, dest) ->
+            val sourceIndex = source.indexOf(input)
+
+            if (sourceIndex > -1) {
+                val found = dest.elementAtOrNull(sourceIndex)
+
+                if (found != null) {
+                    return found
+                }
+            }
+
+        }
+
+        return input
+    }
+
+    private fun runOnVirtual(task: () -> Unit) = Thread.ofVirtual().start(task)
 
     private operator fun <E> List<E>.component6(): E = this[5]
     private operator fun <E> List<E>.component7(): E = this[6]
     private operator fun <E> List<E>.component8(): E = this[7]
-
-    private fun Map<Long, Long>.getMappedSource(part: Long) = this[part] ?: part
 }
