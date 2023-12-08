@@ -2,7 +2,6 @@ package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Future
 
 class DayFive : AbstractSolution() {
     override fun getTestInput() =
@@ -73,8 +72,7 @@ class DayFive : AbstractSolution() {
         val results = mutableListOf<Long>()
 
         seedPairs.map { stage1 ->
-            runOnVirtual {
-                Thread.currentThread().name = "RangeThread[$stage1]"
+            runOnVirtual("RangeThread[$stage1]") {
                 val stages = listOf(
                     /*seedToSoil,*/ soilToFertilizer, fertilizerToWater,
                     waterToLight, lightToTemperature, temperatureToHumidity,
@@ -82,7 +80,7 @@ class DayFive : AbstractSolution() {
                 )
 
                 // Initial conversion so that we have a list
-                val seedToSoilRange = makeMapping(seedToSoil)
+                val seedToSoilRange = makeMappingRanges(seedToSoil)
 
                 var stageData = stage1.map {
                     val res = getMappedInRange(it, seedToSoilRange)
@@ -93,7 +91,7 @@ class DayFive : AbstractSolution() {
                 println("[${Thread.currentThread().name}] $stageData")
 
                 stages.forEach { stage ->
-                    val stageMapping = makeMapping(stage)
+                    val stageMapping = makeMappingRanges(stage)
 
                     stageData = stageData.map {
                         val res = getMappedInRange(it, stageMapping)
@@ -114,7 +112,7 @@ class DayFive : AbstractSolution() {
         return "${results.minOf { it }}"
     }
 
-    private fun makeMapping(input: List<String>): List<Pair<LongRange, LongRange>> {
+    private fun makeMappingRanges(input: List<String>): List<Pair<LongRange, LongRange>> {
         val ranges = mutableListOf<Pair<LongRange, LongRange>>()
 
         input.forEach {
@@ -128,7 +126,7 @@ class DayFive : AbstractSolution() {
         return ranges
     }
 
-    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>, result: (Long) -> Unit) = runOnVirtual {
+    private fun getMappedInRange(input: Long, ranges: List<Pair<LongRange, LongRange>>, result: (Long) -> Unit) = runOnVirtual("MappedThread[$input]") {
         val found = getMappedInRange(input, ranges)
 
         result(found)
@@ -157,7 +155,7 @@ class DayFive : AbstractSolution() {
         return input
     }
 
-    private fun runOnVirtual(task: () -> Unit) = Thread.ofVirtual().start(task)
+    private fun runOnVirtual(name: String, task: () -> Unit) = Thread.ofVirtual().name(name).start(task)
 
     private operator fun <E> List<E>.component6(): E = this[5]
     private operator fun <E> List<E>.component7(): E = this[6]
