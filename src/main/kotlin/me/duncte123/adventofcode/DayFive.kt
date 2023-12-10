@@ -73,6 +73,7 @@ class DayFive : AbstractSolution() {
             val tempSeedRanges = mutableListOf<Pair<Long, Long>>()
             stage.map { it.toRangeInput() }
                 .forEach { (destStart, sourceStart, rLen) ->
+                    // Not using forEach here to get around my good friend ConcurrentModificationException
                     for (index in 0 ..< seedPairs.size) {
                         val (seed, sLen) = seedPairs[index]
 
