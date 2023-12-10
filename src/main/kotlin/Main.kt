@@ -19,6 +19,7 @@ fun getDayIndex(): Int {
 }
 
 fun main(args: Array<String>) {
+    val start = System.currentTimeMillis()
     val useTestInput = args.isNotEmpty() && "--use-test-input" == args[0]
 //    val useTestInput = false
     val day = getDayIndex()
@@ -28,5 +29,7 @@ fun main(args: Array<String>) {
     val selectedInput = if (useTestInput) instance.getTestInput() else instance.getInput()
     val output = instance.run(selectedInput)
 
-    println("Day ${day + 1}: $output")
+    val end = System.currentTimeMillis()
+
+    println("Day ${day + 1}: $output (Took ${end - start}ms)")
 }
