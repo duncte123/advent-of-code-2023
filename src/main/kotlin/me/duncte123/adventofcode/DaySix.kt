@@ -8,30 +8,27 @@ class DaySix : AbstractSolution() {
         "Distance:  9  40  200"
 
     override fun run(input: String): String {
-        val (times, distances) = input.split("\n")
+        val (raceDuration, recordDistance) = input.split("\n")
                 .map {
                     val a = it.split("\\s+".toRegex()).toMutableList()
                     a.removeFirst()
-                    a.map { n -> n.toInt() }
+                    a.joinToString("").toLong()
                 }
 
         val winsPerRace = mutableListOf<Int>()
 
-        times.forEachIndexed { i, raceDuration ->
-            val recordDistance = distances[i]
-            val maxHoldToWin = mutableListOf<Int>()
+        val maxHoldToWin = mutableListOf<Long>()
 
-            (0 .. raceDuration).forEach { heltDownTime ->
-                val remainingTime = raceDuration - heltDownTime
-                val boatDistance = heltDownTime * remainingTime
+        (0 .. raceDuration).forEach { heltDownTime ->
+            val remainingTime = raceDuration - heltDownTime
+            val boatDistance = heltDownTime * remainingTime
 
-                if (boatDistance > recordDistance) {
-                    maxHoldToWin.add(heltDownTime)
-                }
+            if (boatDistance > recordDistance) {
+                maxHoldToWin.add(heltDownTime)
             }
-
-            winsPerRace.add(maxHoldToWin.size)
         }
+
+        winsPerRace.add(maxHoldToWin.size)
 
         println(winsPerRace)
 
