@@ -14,6 +14,8 @@ class DaySeven : AbstractSolution() {
         "QQQJA 483"
 
     override fun run(input: String): String {
+        println("AAAAJ".isFiveOfAKind())
+
         val hands = input.split("\n").map {
             val (cards, bid) = it.split(" ")
 
@@ -26,13 +28,15 @@ class DaySeven : AbstractSolution() {
 
         println(sortedHands)
 
-        var result = 0
+        var result = 0L
 
         sortedHands.forEachIndexed { i, (_, points) ->
             result += points * (i + 1)
         }
 
-        return "$result"
+        val wrong = listOf(250761535L, 251269448L, 251345551L, 251818476L, 251742373L)
+
+        return "$result ${if (result in wrong) "(wrong answer)" else ""}"
     }
 
     // TODO: refactor do to this smarter, call compareHands as little as possible
@@ -153,11 +157,15 @@ class DaySeven : AbstractSolution() {
         val firstChar = this[0]
         val strLen = this.length
         val testStr = firstChar.toString().repeat(strLen)
+        val highestCard = this.toCharArray()
+            .sortedWith { a, b -> b compareCard a }[0]
 
         if (this == testStr) {
-            val highestCard = this.toCharArray()
-                .sortedWith { a, b -> a compareCard b }[0]
             return BoolWithHighCard.ofTrue(highestCard)
+        }
+
+        if (this.contains('J')) {
+            return this.replaceJokers(highestCard).isFiveOfAKind()
         }
 
         return BoolWithHighCard.ofFalse()
@@ -167,6 +175,14 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
 
         if (chars.size != 2) {
+            if (this.contains('J')) {
+                val highestNotJoker = chars
+                    .filter { it.key != 'J' }
+                    .maxBy { it.value.size }
+
+                return this.replaceJokers(highestNotJoker.key).isFourOfAKind()
+            }
+
             return BoolWithHighCard.ofFalse()
         }
 
@@ -179,6 +195,15 @@ class DaySeven : AbstractSolution() {
         }
 
         if (bigOne == null) {
+            // unlikely tbh
+            if (this.contains('J')) {
+                val highestNotJoker = chars
+                    .filter { it.key != 'J' }
+                    .maxBy { it.value.size }
+
+                return this.replaceJokers(highestNotJoker.key).isFourOfAKind()
+            }
+
             return BoolWithHighCard.ofFalse()
         }
 
@@ -189,6 +214,23 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
 
         if (chars.size != 2) {
+//            if (this.contains('J')) {
+//                val jokerCount = this.toCharArray().count { it == 'J' }
+//                val candidates = mutableSetOf<Char>()
+//
+//                chars.forEach {
+//                    if (it.value.size != 3 && it.value.size != 2 && it.key != 'J') {
+//                        candidates.add(it.key)
+//                    }
+//                }
+//
+//                if (candidates.isNotEmpty()) {
+//                    val bestMatch = candidates.sortedWith { a, b -> b compareCard a }[0]
+//
+//                    return this.replaceJokers(bestMatch).isFullHouse()
+//                }
+//            }
+
             return BoolWithHighCard.ofFalse()
         }
 
@@ -214,13 +256,20 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
 
         if (!chars.any { it.value.size == 3 }) {
+//            if (this.contains('J')){
+//                val highest = chars.filter { it.key != 'J' }
+//                    .maxBy { it.value.size }
+//
+//                return this.replaceJokers(highest.key).isThreeOfAKind()
+//            }
+
             return BoolWithHighCard.ofFalse()
         }
 
         // TODO: this may be wrong, double check the rules
         val highestOtherCard = chars.filter { it.value.size != 3 }
             .map { it.key }
-            .sortedWith { a, b -> a compareCard b}[0]
+            .sortedWith { a, b -> b compareCard a }[0]
 
         return BoolWithHighCard.ofTrue(highestOtherCard)
     }
@@ -230,11 +279,17 @@ class DaySeven : AbstractSolution() {
 
         val pairs = chars.filter { it.value.size == 2 }
             .map { it.key }
-            .sortedWith { a, b -> a compareCard b }
+            .sortedWith { a, b -> b compareCard a }
 
         if (pairs.size == 2) {
             return BoolWithHighCard.ofTrue(pairs[0])
         }
+
+//        if (this.contains('J')) {
+//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
+//
+//            return this.replaceJokers(highestCard).isTwoPair()
+//        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -243,11 +298,17 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
         val pairs = chars.filter { it.value.size == 2 }
             .map { it.key }
-            .sortedWith { a, b -> a compareCard b }
+            .sortedWith { a, b -> b compareCard a }
 
         if (pairs.size == 1) {
             return BoolWithHighCard.ofTrue(pairs[0])
         }
+
+//        if (this.contains('J')) {
+//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
+//
+//            return thisS.replaceJokers(highestCard).isTwoPair()
+//        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -257,10 +318,16 @@ class DaySeven : AbstractSolution() {
         val distinctArray = chars.distinct()
 
         if (chars.size == distinctArray.size) {
-            val highestCard = chars.sortedWith { a, b -> a compareCard b }[0]
+            val highestCard = chars.sortedWith { a, b -> b compareCard a }[0]
 
             return BoolWithHighCard.ofTrue(highestCard)
         }
+
+//        if (this.contains('J')) {
+//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
+//
+//            return this.replaceJokers(highestCard).isTwoPair()
+//        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -276,6 +343,8 @@ class DaySeven : AbstractSolution() {
 
         return 0
     }
+
+    private fun String.replaceJokers(replacement: Char) = this.replace('J', replacement)
 }
 
 val cardPoints = listOf('J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A')
