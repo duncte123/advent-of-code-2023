@@ -10,6 +10,7 @@ val days = listOf(
     DayFive::class,
     DaySix::class,
     DaySeven::class,
+    DayEight::class,
 )
 
 fun getDayIndex(): Int {
