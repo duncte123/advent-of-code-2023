@@ -1,7 +1,6 @@
 package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
-import java.util.concurrent.CountDownLatch
 
 class DayEight : AbstractSolution() {
     private val directionRegex = "(?<key>[A-Z0-9]{3}) = \\((?<left>[A-Z0-9]{3}), (?<right>[A-Z0-9]{3})\\)".toRegex()
@@ -40,52 +39,34 @@ class DayEight : AbstractSolution() {
         println(instructions)
 
         val endsInA = instructions.keys.filter { it.endsWith('A') }
-        val latch = CountDownLatch(endsInA.size)
-        val steps = 0
-
-        endsInA.forEach { startKey ->
-            followPath(startKey, direction, instructions) {
-                println("Steps: $it")
-                latch.countDown()
-            }
-        }
-
-        latch.await()
-
-        return "$steps"
-    }
-
-    private fun followPath(startKey: String, direction: String, instructions: Map<String, Instruction>, stepsCallback: (Int) -> Unit) = runOnVirtual(startKey) {
-        var steps = 0
-        var curInstruction = startKey
+        val theirInstructions = endsInA.toMutableList()
+        var steps = 0L
 
         while (true) {
-            val instruction = instructions[curInstruction]!!
-            val stepToTake = direction[steps % direction.length]
-
-            println(stepToTake)
+            val stepToTake = direction[(steps % direction.length).toInt()]
 
             steps++
 
-            if (stepToTake == 'L') {
-                if (instruction.left.endsWith('Z')) {
-                    stepsCallback(steps)
-                    break
-                }
+            println(stepToTake)
 
-                curInstruction = instruction.left
-            } else {
-                if (instruction.right.endsWith('Z')) {
-                    stepsCallback(steps)
-                    break
-                }
+            endsInA.forEachIndexed { keyId, _ ->
+                val instruction = instructions[theirInstructions[keyId]]!!
 
-                curInstruction = instruction.right
+                if (stepToTake == 'L') {
+                    theirInstructions[keyId] = instruction.left
+                } else {
+                    theirInstructions[keyId] = instruction.right
+                }
+            }
+
+            if (theirInstructions.all { it.endsWith('Z') }) {
+                // LCM time :/
+                break
             }
         }
-    }
 
-    private fun runOnVirtual(start: String, task: () -> Unit) = Thread.ofVirtual().name("SearchTask[$start]").start(task)
+        return "$steps (12361)"
+    }
 }
 
 data class Instruction(val left: String, val right: String)
