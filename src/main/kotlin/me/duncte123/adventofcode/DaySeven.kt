@@ -3,8 +3,6 @@ package me.duncte123.adventofcode
 import me.duncte123.adventofcode.partial.AbstractSolution
 
 class DaySeven : AbstractSolution() {
-    private val cardPoints = listOf('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
-
     // cards -> bid
     override fun getTestInput() =
         "32T3K 765\n" +
@@ -13,8 +11,9 @@ class DaySeven : AbstractSolution() {
         "KTJJT 220\n" +
         "QQQJA 483"
 
+    // Note to self: you just add the jokers to the cards you have the most of
     override fun run(input: String): String {
-        println("AAAAJ".isFiveOfAKind())
+        println("TTTAJ".isFullHouse())
 
         val hands = input.split("\n").map {
             val (cards, bid) = it.split(" ")
@@ -34,7 +33,7 @@ class DaySeven : AbstractSolution() {
             result += points * (i + 1)
         }
 
-        val wrong = listOf(250761535L, 251269448L, 251345551L, 251818476L, 251742373L)
+        val wrong = listOf(250497043L, 250761535L, 251269448L, 251345551L, 251818476L, 251742373L)
 
         return "$result ${if (result in wrong) "(wrong answer)" else ""}"
     }
@@ -195,15 +194,6 @@ class DaySeven : AbstractSolution() {
         }
 
         if (bigOne == null) {
-            // unlikely tbh
-            if (this.contains('J')) {
-                val highestNotJoker = chars
-                    .filter { it.key != 'J' }
-                    .maxBy { it.value.size }
-
-                return this.replaceJokers(highestNotJoker.key).isFourOfAKind()
-            }
-
             return BoolWithHighCard.ofFalse()
         }
 
@@ -214,22 +204,12 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
 
         if (chars.size != 2) {
-//            if (this.contains('J')) {
-//                val jokerCount = this.toCharArray().count { it == 'J' }
-//                val candidates = mutableSetOf<Char>()
-//
-//                chars.forEach {
-//                    if (it.value.size != 3 && it.value.size != 2 && it.key != 'J') {
-//                        candidates.add(it.key)
-//                    }
-//                }
-//
-//                if (candidates.isNotEmpty()) {
-//                    val bestMatch = candidates.sortedWith { a, b -> b compareCard a }[0]
-//
-//                    return this.replaceJokers(bestMatch).isFullHouse()
-//                }
-//            }
+            if (this.contains('J')) {
+                val (maxItemChar) = chars.filter { it.key != 'J' }
+                    .maxBy { it.value.size }
+
+                return this.replaceJokers(maxItemChar).isFullHouse()
+            }
 
             return BoolWithHighCard.ofFalse()
         }
@@ -256,12 +236,12 @@ class DaySeven : AbstractSolution() {
         val chars = this.toCharArray().groupBy { it }
 
         if (!chars.any { it.value.size == 3 }) {
-//            if (this.contains('J')){
-//                val highest = chars.filter { it.key != 'J' }
-//                    .maxBy { it.value.size }
-//
-//                return this.replaceJokers(highest.key).isThreeOfAKind()
-//            }
+            if (this.contains('J')){
+                val highest = chars.filter { it.key != 'J' }
+                    .maxBy { it.value.size }
+
+                return this.replaceJokers(highest.key).isThreeOfAKind()
+            }
 
             return BoolWithHighCard.ofFalse()
         }
@@ -285,11 +265,25 @@ class DaySeven : AbstractSolution() {
             return BoolWithHighCard.ofTrue(pairs[0])
         }
 
-//        if (this.contains('J')) {
-//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
-//
-//            return this.replaceJokers(highestCard).isTwoPair()
-//        }
+        if (this.contains('J')){
+            val highest = chars.filter { it.key != 'J' }
+                .maxBy { it.value.size }
+
+            return this.replaceJokers(highest.key).isTwoPair()
+        }
+
+        if (this.contains('J')) {
+            val itemThatHasPair = chars.filterValues { it.size == 2 }
+
+            if (itemThatHasPair.isEmpty()) {
+                return BoolWithHighCard.ofFalse()
+            }
+
+            val rmKey = itemThatHasPair.keys.first()
+            val highestCard = this.toCharArray().filter { it != rmKey }.sortedWith { a, b -> b compareCard a }[0]
+
+            return this.replaceJokers(highestCard).isTwoPair()
+        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -304,11 +298,18 @@ class DaySeven : AbstractSolution() {
             return BoolWithHighCard.ofTrue(pairs[0])
         }
 
-//        if (this.contains('J')) {
-//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
-//
-//            return thisS.replaceJokers(highestCard).isTwoPair()
-//        }
+        if (this.contains('J')){
+            val highest = chars.filter { it.key != 'J' }
+                .maxBy { it.value.size }
+
+            return this.replaceJokers(highest.key).isOnePair()
+        }
+
+        if (this.contains('J')) {
+            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
+
+            return this.replaceJokers(highestCard).isOnePair()
+        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -323,11 +324,13 @@ class DaySeven : AbstractSolution() {
             return BoolWithHighCard.ofTrue(highestCard)
         }
 
-//        if (this.contains('J')) {
-//            val highestCard = this.toCharArray().sortedWith { a, b -> b compareCard a }[0]
-//
-//            return this.replaceJokers(highestCard).isTwoPair()
-//        }
+        if (this.contains('J')){
+            val highest = chars.groupBy { it }
+                .filter { it.key != 'J' }
+                .maxBy { it.value.size }
+
+            return this.replaceJokers(highest.key).isThreeOfAKind()
+        }
 
         return BoolWithHighCard.ofFalse()
     }
@@ -367,7 +370,7 @@ open class FakeBool(private val boolVal: Boolean): Comparable<Boolean> {
             return 0
         }
 
-        if (boolVal && !other) {
+        if (boolVal) {
             return 1
         }
 
@@ -380,13 +383,6 @@ open class FakeBool(private val boolVal: Boolean): Comparable<Boolean> {
     infix fun xor(other: Boolean) = (boolVal && !other) || (!boolVal && other)
 }
 
-data class FullHouseResult(val isFullHouse: Boolean, val card1: Char, val card2: Char) : FakeBool(isFullHouse) {
-    companion object {
-        fun ofFalse() = FullHouseResult(false, 'X', 'X')
-        fun ofTrue(card1: Char, card2: Char) = FullHouseResult(true, card1, card2)
-    }
-}
-
 data class BoolWithHighCard(val isValid: Boolean, val highestCard: Char) : FakeBool(isValid) {
     fun compareTo(other: BoolWithHighCard): Int {
         return highestCard compareCard other.highestCard
@@ -397,11 +393,3 @@ data class BoolWithHighCard(val isValid: Boolean, val highestCard: Char) : FakeB
         fun ofTrue(card: Char) = BoolWithHighCard(true, card)
     }
 }
-
-data class ThreeOfAKind(val isValid: Boolean, val highestOtherCard: Char): FakeBool(isValid) {
-    companion object {
-        fun ofFalse() = ThreeOfAKind(false, 'X')
-        fun ofTrue(card: Char) = ThreeOfAKind(true, card)
-    }
-}
-
