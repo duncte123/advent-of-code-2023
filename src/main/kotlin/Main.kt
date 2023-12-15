@@ -11,6 +11,7 @@ val days = listOf(
     DaySix::class,
     DaySeven::class,
     DayEight::class,
+    DayNine::class,
 )
 
 fun getDayIndex(): Int {
