@@ -38,11 +38,11 @@ class DayNine : AbstractSolution() {
                     var result = 0L
 
                     rev.forEach {
-                        val lastItem = it.last()
+                        val lastItem = it.first()
 
-                        println(lastItem)
+                        result = lastItem - result
 
-                        result += lastItem
+                        println("$lastItem - $result")
                     }
 
                     historyValues.add(result)
