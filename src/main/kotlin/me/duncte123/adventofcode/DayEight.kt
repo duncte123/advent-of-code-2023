@@ -1,9 +1,11 @@
 package me.duncte123.adventofcode
 
 import me.duncte123.adventofcode.partial.AbstractSolution
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
 
 class DayEight : AbstractSolution() {
-    private val directionRegex = "(?<key>[A-Z0-9]{3}) = \\((?<left>[A-Z0-9]{3}), (?<right>[A-Z0-9]{3})\\)".toRegex()
+    private val directionRegex = "(?<key>\\w{3}) = \\((?<left>\\w{3}), (?<right>\\w{3})\\)".toRegex()
 
     override fun getTestInput() =
         "LR\n" +
@@ -16,6 +18,8 @@ class DayEight : AbstractSolution() {
         "22C = (22Z, 22Z)\n" +
         "22Z = (22B, 22B)\n" +
         "XXX = (XXX, XXX)"
+
+    private val executor = Executors.newVirtualThreadPerTaskExecutor()
 
     override fun run(input: String): String {
         val instructions = mutableMapOf<String, Instruction>()
@@ -40,32 +44,75 @@ class DayEight : AbstractSolution() {
 
         val endsInA = instructions.keys.filter { it.endsWith('A') }
         val theirInstructions = endsInA.toMutableList()
-        var steps = 0L
+        val cycles = mutableListOf<Long>()
+        val latch = CountDownLatch(endsInA.size)
 
-        while (true) {
-            val stepToTake = direction[(steps % direction.length).toInt()]
+        endsInA.forEachIndexed { index, _ ->
+            var steps = 0L
 
-            steps++
+            executor.execute {
+                while (true) {
+                    val stepToTake = direction[(steps % direction.length).toInt()]
 
-            println(stepToTake)
+                    steps++
 
-            endsInA.forEachIndexed { keyId, _ ->
-                val instruction = instructions[theirInstructions[keyId]]!!
+                    val instruction = instructions[theirInstructions[index]]!!
 
-                if (stepToTake == 'L') {
-                    theirInstructions[keyId] = instruction.left
-                } else {
-                    theirInstructions[keyId] = instruction.right
+                    println(instruction)
+
+                    if (stepToTake == 'L') {
+                        theirInstructions[index] = instruction.left
+                    } else {
+                        theirInstructions[index] = instruction.right
+                    }
+
+                    if (theirInstructions[index].endsWith('Z')) {
+                        cycles.add(steps)
+                        latch.countDown()
+                        break
+                    }
                 }
-            }
-
-            if (theirInstructions.all { it.endsWith('Z') }) {
-                // LCM time :/
-                break
             }
         }
 
-        return "$steps (12361)"
+        latch.await()
+
+        println(cycles)
+        println(lcm(cycles))
+
+        val wrongAnswers = listOf(440117549617L, 12361L)
+
+        val result = lcm(cycles)
+
+        return "$result (is wrong: ${if (result in wrongAnswers) "Yes" else "No"})"
+    }
+
+    private fun gcd(a: Long, b: Long): Long {
+        var tmpA = a
+        var tmpB = b
+
+        while (tmpB > 0) {
+            val tmp = tmpB
+            tmpB = tmpA % tmpB
+            tmpA = tmp
+        }
+
+        return tmpA
+    }
+
+    private fun lcm(a: Long, b: Long): Long {
+        return a * (b / gcd(a, b))
+    }
+
+    private fun lcm(items: List<Long>): Long {
+        val itemCopy = items.toList()
+        var result = itemCopy.removeFirst()
+
+        itemCopy.forEach {
+            result = lcm(result, it)
+        }
+
+        return result
     }
 }
 
